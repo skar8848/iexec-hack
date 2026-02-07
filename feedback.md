@@ -2,7 +2,7 @@
 
 ## Overview
 
-We built {HyperSecret}, an anonymous USDC bridge to Hyperliquid using iExec TEE. The TEE is the core of our privacy model — it's the only component that knows the mapping between depositors and destination addresses.
+We built {HyperSecret}, an anonymous USDC bridge to Hyperliquid using iExec TEE. The TEE is the core of our privacy model,it's the only component that knows the mapping between depositors and destination addresses.
 
 ## Tools Used
 
@@ -13,11 +13,11 @@ We built {HyperSecret}, an anonymous USDC bridge to Hyperliquid using iExec TEE.
 
 ## What Worked Well
 
-**iApp CLI is great for getting started.** `iapp init` scaffolds everything you need — Dockerfile, config, entry point. Going from zero to a working TEE app was surprisingly fast. The `iapp test` command for local testing before deploying saved us a lot of time.
+**iApp CLI is great for getting started.** `iapp init` scaffolds everything you need,Dockerfile, config, entry point. Going from zero to a working TEE app was surprisingly fast. The `iapp test` command for local testing before deploying saved us a lot of time.
 
 **iApp deploy is smooth.** One command builds the Docker image, wraps it for SCONE/SGX, pushes to DockerHub, and deploys on-chain. That's a lot of complexity hidden behind a single command, and it just works.
 
-**The SDK works well from the browser.** We used the iExec SDK directly from our React frontend (hosted on Vercel) to push secrets, fetch orderbooks, and match orders. No backend needed — the user's MetaMask wallet handles signing. This was a big win for our architecture.
+**The SDK works well from the browser.** We used the iExec SDK directly from our React frontend (hosted on Vercel) to push secrets, fetch orderbooks, and match orders. No backend needed,the user's MetaMask wallet handles signing. This was a big win for our architecture.
 
 **App developer secrets are solid.** Storing our TEE wallet private key as an app developer secret means it's only accessible inside the enclave. Simple API, works as expected.
 
@@ -47,4 +47,4 @@ We built {HyperSecret}, an anonymous USDC bridge to Hyperliquid using iExec TEE.
 
 ## Overall
 
-iExec TEE tooling is solid. The iApp CLI makes it accessible even if you've never worked with SGX before. The biggest friction was around the edges (secret immutability, order publishing workflow, chain config) rather than the core TEE functionality itself. For a hackathon, we went from idea to working E2E anonymous bridge in under 48h — that says a lot about the developer experience.
+iExec TEE tooling is solid. The iApp CLI makes it accessible even if you've never worked with SGX before. The biggest friction was around the edges (secret immutability, order publishing workflow, chain config) rather than the core TEE functionality itself. For a hackathon, we went from idea to working E2E anonymous bridge in under 48h,that says a lot about the developer experience.
