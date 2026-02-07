@@ -1,6 +1,6 @@
 // Deployed addresses (Arbitrum Sepolia)
 export const VAULT_ADDRESS = "0xa285D070351aEAF4865923e4B88C51E63283aD84";
-export const IAPP_ADDRESS = "0x00944931c04C52159F9060dA4C7F0caa73c418Af";
+export const IAPP_ADDRESS = "0xB9c2c9671D16122753f0D1c0f62388db790F8107";
 export const FALLBACK_API =
   import.meta.env.VITE_FALLBACK_API || "http://localhost:3001";
 
