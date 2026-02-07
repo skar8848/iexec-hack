@@ -7,8 +7,6 @@ export const FALLBACK_API =
   import.meta.env.VITE_FALLBACK_API || "http://localhost:3001";
 
 export const USDC_ADDRESS = "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d";
-export const USDC2_ADDRESS = "0x1baAbB04529D43a73232B713C0FE471f7c7334d5";
-export const HL_BRIDGE_ADDRESS = "0x08cfc1B6b2dCF36A1480b99353A354AA8AC56f89";
 
 export const VAULT_ABI = [
   {
@@ -83,16 +81,6 @@ export const ERC20_ABI = [
     name: "balanceOf",
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      { name: "to", type: "address" },
-      { name: "amount", type: "uint256" },
-    ],
-    name: "transfer",
-    outputs: [{ name: "", type: "bool" }],
-    stateMutability: "nonpayable",
     type: "function",
   },
 ];

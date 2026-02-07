@@ -63,7 +63,6 @@ flowchart LR
 ## Features
 
 - **Anonymous Bridge** - Deposit USDC to vault, TEE breaks the on-chain link via fresh wallets
-- **Direct HL Deposit** - Transfer USDC2 directly to the Hyperliquid bridge (non-anonymous)
 - **iExec SGX** - Real TEE execution in production (Intel SGX via SCONE)
 - **Fallback Server** - Demo mode when iExec workerpool is unavailable
 - **Chain Validation** - Wallet must be on Arbitrum Sepolia to bridge
