@@ -53,16 +53,15 @@ flowchart LR
 
 | Contract | Address |
 |----------|---------|
-| PrivacyVault | `0x36f6DcDd2200Fd3d044351A545635AC8F39ee1E7` |
+| PrivacyVault (USDC2) | `0xa285D070351aEAF4865923e4B88C51E63283aD84` |
 | iApp (iExec TEE) | `0x00944931c04C52159F9060dA4C7F0caa73c418Af` |
 | TEE Wallet | `0xf308D795A3635d443A99B28438936ea9036dD6b5` |
-| USDC (Circle) | `0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d` |
-| USDC2 (HL Bridge) | `0x1baAbB04529D43a73232B713C0FE471f7c7334d5` |
+| USDC2 (HL Token) | `0x1baAbB04529D43a73232B713C0FE471f7c7334d5` |
 | HL Bridge | `0x08cfc1B6b2dCF36A1480b99353A354AA8AC56f89` |
 
 ## Features
 
-- **Anonymous Bridge** - Deposit USDC to vault, TEE breaks the on-chain link via fresh wallets
+- **Anonymous HL Deposit** - Deposit USDC2 to vault, TEE bridges to Hyperliquid via fresh wallets + usdSend
 - **iExec SGX** - Real TEE execution in production (Intel SGX via SCONE)
 - **Fallback Server** - Demo mode when iExec workerpool is unavailable
 - **Chain Validation** - Wallet must be on Arbitrum Sepolia to bridge

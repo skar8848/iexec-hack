@@ -2,11 +2,10 @@ const { ethers } = require("ethers");
 
 // --- Config ---
 const ARB_SEPOLIA_RPC = "https://sepolia-rollup.arbitrum.io/rpc";
-const USDC_ADDRESS = "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d";
+// USDC2 = the token accepted by HL bridge on Arb Sepolia (= USDC on mainnet)
+const USDC2_ADDRESS = "0x1baAbB04529D43a73232B713C0FE471f7c7334d5";
 const HL_BRIDGE_ADDRESS = "0x08cfc1B6b2dCF36A1480b99353A354AA8AC56f89";
 const HL_TESTNET_API = "https://api.hyperliquid-testnet.xyz";
-// USDC2 is the token HL bridge actually accepts on Arb Sepolia
-const USDC2_ADDRESS = "0x1baAbB04529D43a73232B713C0FE471f7c7334d5";
 
 // --- ABIs ---
 const VAULT_ABI = [
@@ -124,20 +123,22 @@ async function waitForHLCredit(address, expectedAmount, maxRetries = 30) {
  * Main execution pipeline.
  * This runs inside the TEE in production (iExec iApp).
  *
- * The flow breaks the on-chain link between depositor and recipient:
+ * Full anonymous bridge flow:
  * 1. TEE generates a fresh random wallet (untraceable)
- * 2. Vault redistributes USDC to fresh wallet (TEE-authorized)
- * 3. Fresh wallet sends USDC to user's destination address
+ * 2. Vault redistributes USDC2 to fresh wallet (TEE-authorized)
+ * 3. Fresh wallet bridges USDC2 to Hyperliquid via HL bridge
+ * 4. Wait for HL to credit the fresh wallet (~60s)
+ * 5. Fresh wallet sends USDC to destination on HL via usdSend (EIP-712)
  *
- * An on-chain observer sees: Vault → FreshWallet → Destination
- * but CANNOT link it back to the original depositor.
+ * On-chain observer sees: Vault → FreshWallet → HL Bridge
+ * On HL: FreshWallet → Destination
+ * CANNOT link the original depositor to the final HL recipient.
  */
 async function execute(teePrivateKey, vaultAddress, hlDestination, amountUsdc) {
-  // Normalize address checksum
   hlDestination = ethers.getAddress(hlDestination);
 
-  console.log("\n=== PrivacyBridge TEE Execution ===");
-  console.log(`  Destination: ${hlDestination}`);
+  console.log("\n=== {HyperSecret} TEE Execution ===");
+  console.log(`  HL Destination: ${hlDestination}`);
   console.log(`  Amount: ${amountUsdc} USDC`);
 
   const provider = new ethers.JsonRpcProvider(ARB_SEPOLIA_RPC);
@@ -146,19 +147,19 @@ async function execute(teePrivateKey, vaultAddress, hlDestination, amountUsdc) {
 
   // Step 1: Generate fresh wallet
   const freshWallet = ethers.Wallet.createRandom().connect(provider);
-  console.log(`\n[1/4] Fresh wallet generated: ${freshWallet.address}`);
+  console.log(`\n[1/6] Fresh wallet generated: ${freshWallet.address}`);
 
-  // Step 2: Call redistribute() on PrivacyVault
+  // Step 2: Redistribute USDC2 from vault to fresh wallet
   const vault = new ethers.Contract(vaultAddress, VAULT_ABI, teeWallet);
   const amountWei = ethers.parseUnits(amountUsdc.toString(), 6);
 
-  console.log(`\n[2/4] Calling redistribute()...`);
+  console.log(`\n[2/6] Calling redistribute()...`);
   const tx1 = await vault.redistribute([freshWallet.address], [amountWei]);
   const receipt1 = await tx1.wait();
   console.log(`  Redistribute tx: ${tx1.hash} (block ${receipt1.blockNumber})`);
 
-  // Step 3: Send ETH to fresh wallet for gas
-  console.log(`\n[3/4] Funding fresh wallet with ETH for gas...`);
+  // Step 3: Fund fresh wallet with ETH for gas
+  console.log(`\n[3/6] Funding fresh wallet with ETH for gas...`);
   const ethForGas = ethers.parseEther("0.001");
   const tx2 = await teeWallet.sendTransaction({
     to: freshWallet.address,
@@ -167,27 +168,39 @@ async function execute(teePrivateKey, vaultAddress, hlDestination, amountUsdc) {
   await tx2.wait();
   console.log(`  ETH funding tx: ${tx2.hash}`);
 
-  // Verify fresh wallet has USDC
-  const usdc = new ethers.Contract(USDC_ADDRESS, ERC20_ABI, freshWallet);
-  const freshBalance = await usdc.balanceOf(freshWallet.address);
+  // Verify fresh wallet has USDC2
+  const usdc2 = new ethers.Contract(USDC2_ADDRESS, ERC20_ABI, freshWallet);
+  const freshBalance = await usdc2.balanceOf(freshWallet.address);
   console.log(
-    `  Fresh wallet USDC: ${ethers.formatUnits(freshBalance, 6)} USDC`
+    `  Fresh wallet USDC2: ${ethers.formatUnits(freshBalance, 6)}`
   );
 
-  // Step 4: Transfer USDC from fresh wallet to destination
-  // This breaks the on-chain link: observer sees Vault → Fresh → Destination
-  // but cannot link it to the original depositor
-  console.log(`\n[4/4] Sending USDC to destination ${hlDestination}...`);
-  const tx3 = await usdc.transfer(hlDestination, amountWei);
+  // Step 4: Bridge USDC2 to Hyperliquid (transfer to HL bridge contract)
+  console.log(`\n[4/6] Bridging USDC2 to Hyperliquid...`);
+  const tx3 = await usdc2.transfer(HL_BRIDGE_ADDRESS, amountWei);
   const receipt3 = await tx3.wait();
-  console.log(`  Transfer tx: ${tx3.hash} (block ${receipt3.blockNumber})`);
+  console.log(`  Bridge tx: ${tx3.hash} (block ${receipt3.blockNumber})`);
+
+  // Step 5: Wait for HL to credit the fresh wallet
+  console.log(`\n[5/6] Waiting for HL credit...`);
+  await waitForHLCredit(freshWallet.address, amountUsdc);
+
+  // Step 6: usdSend from fresh wallet to destination on HL
+  console.log(`\n[6/6] Sending USDC to ${hlDestination} on Hyperliquid...`);
+  const hlResult = await hlUsdSend(freshWallet, hlDestination, amountUsdc);
+  console.log(`  HL usdSend result:`, JSON.stringify(hlResult));
+
+  if (hlResult.status === "err") {
+    throw new Error(`usdSend failed: ${hlResult.response || JSON.stringify(hlResult)}`);
+  }
 
   const result = {
     success: true,
     freshWallet: freshWallet.address,
     redistributeTx: tx1.hash,
     ethFundingTx: tx2.hash,
-    transferTx: tx3.hash,
+    bridgeTx: tx3.hash,
+    hlTransferResult: hlResult,
     destination: hlDestination,
     amount: amountUsdc,
     timestamp: new Date().toISOString(),

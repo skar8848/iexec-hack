@@ -22,14 +22,14 @@ const docsTree = [
     category: "Protocol",
     content: {
       title: "Getting Started",
-      body: "{HyperSecret} is an anonymous deposit protocol for Hyperliquid Testnet, powered by iExec TEE (Trusted Execution Environment) on Arbitrum Sepolia. It allows users to deposit USDC into a vault on-chain and bridge it to Hyperliquid Testnet without anyone being able to link the initial deposit to the final destination address.",
+      body: "{HyperSecret} is an anonymous deposit protocol for Hyperliquid Testnet, powered by iExec TEE (Trusted Execution Environment) on Arbitrum Sepolia. It allows users to deposit USDC2 into a vault on-chain and have it bridged anonymously to any address on Hyperliquid Testnet, without anyone being able to link the initial deposit to the final destination.",
       subsections: [
         {
           title: "Prerequisites",
           items: [
             "A wallet with ETH on Arbitrum Sepolia",
-            "USDC testnet tokens (faucet: faucet.circle.com)",
-            "A Hyperliquid testnet account",
+            "USDC2 tokens on Arbitrum Sepolia (withdraw from Hyperliquid Testnet)",
+            "A Hyperliquid Testnet destination address",
           ],
         },
       ],
@@ -44,15 +44,15 @@ const docsTree = [
         id: "deposit",
         label: "1. Deposit USDC",
         content: {
-          title: "Deposit USDC",
-          body: "Approve and deposit USDC into the PrivacyVault smart contract on Arbitrum Sepolia.",
+          title: "Deposit USDC2",
+          body: "Approve and deposit USDC2 into the PrivacyVault smart contract on Arbitrum Sepolia.",
           subsections: [
             {
               title: "Details",
               items: [
-                "Minimum deposit: 5 USDC",
+                "Minimum deposit: 5 USDC2",
                 "Requires a prior ERC20 approve() transaction",
-                "USDC uses 6 decimals (5 USDC = 5,000,000 wei)",
+                "USDC2 uses 6 decimals (5 USDC2 = 5,000,000 wei)",
                 "Deposits are tracked on-chain for emergency withdrawal",
               ],
             },
@@ -81,17 +81,17 @@ const docsTree = [
         label: "3. TEE Processing",
         content: {
           title: "TEE Processing",
-          body: "Inside the TEE, a fresh wallet is generated. The vault redistributes your USDC to this fresh wallet, which then bridges to Hyperliquid.",
+          body: "Inside the TEE, a fresh wallet is generated. The vault redistributes your USDC2 to this fresh wallet, which then bridges to Hyperliquid and forwards to your destination.",
           subsections: [
             {
               title: "Execution Steps",
               items: [
                 "Generate a fresh random wallet (ethers.Wallet.createRandom)",
-                "Call redistribute() on the vault to send USDC to the fresh wallet",
+                "Call redistribute() on the vault to send USDC2 to the fresh wallet",
                 "Fund the fresh wallet with ~0.001 ETH for gas",
-                "Fresh wallet bridges USDC to Hyperliquid via the HL bridge contract",
+                "Fresh wallet bridges USDC2 to Hyperliquid via the HL bridge contract",
                 "Poll Hyperliquid API until USDC is credited (~60 seconds)",
-                "Sign EIP-712 usdSend to transfer from fresh wallet to user's HL address",
+                "Sign EIP-712 usdSend to transfer from fresh wallet to your HL destination",
               ],
             },
           ],
@@ -130,9 +130,9 @@ const docsTree = [
       title: "Smart Contract",
       body: "The PrivacyVault contract has three main functions:",
       table: [
-        { label: "deposit(amount)", value: "User deposits USDC (min 5 USDC). Requires prior ERC20 approve()." },
-        { label: "redistribute(recipients, amounts)", value: "TEE-only function (REDISTRIBUTOR_ROLE). Sends USDC from vault to fresh wallets." },
-        { label: "emergencyWithdraw()", value: "Safety net allowing users to recover deposited USDC if the TEE is unavailable." },
+        { label: "deposit(amount)", value: "User deposits USDC2 (min 5). Requires prior ERC20 approve()." },
+        { label: "redistribute(recipients, amounts)", value: "TEE-only function (REDISTRIBUTOR_ROLE). Sends USDC2 from vault to fresh wallets." },
+        { label: "emergencyWithdraw()", value: "Safety net allowing users to recover deposited USDC2 if the TEE is unavailable." },
       ],
     },
   },
@@ -144,11 +144,11 @@ const docsTree = [
       title: "Network Configuration",
       table: [
         { label: "Chain", value: "Arbitrum Sepolia (Chain ID: 421614)" },
-        { label: "USDC Contract", value: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d (6 decimals)" },
-        { label: "USDC2 Contract (HL)", value: "0x1baAbB04529D43a73232B713C0FE471f7c7334d5 (6 decimals)" },
+        { label: "PrivacyVault", value: "0xa285D070351aEAF4865923e4B88C51E63283aD84" },
+        { label: "USDC2 Contract", value: "0x1baAbB04529D43a73232B713C0FE471f7c7334d5 (6 decimals)" },
         { label: "HL Bridge", value: "0x08cfc1B6b2dCF36A1480b99353A354AA8AC56f89" },
         { label: "HL API", value: "api.hyperliquid-testnet.xyz" },
-        { label: "USDC Faucet", value: "faucet.circle.com (20 USDC / 2h)" },
+        { label: "USDC2 Source", value: "Withdraw from Hyperliquid Testnet (drip faucet → withdraw)" },
         { label: "ETH Faucet", value: "faucets.chain.link/arbitrum-sepolia" },
       ],
     },
@@ -163,8 +163,8 @@ const docsTree = [
         {
           title: "Warnings",
           items: [
-            "Minimum deposit on Hyperliquid Testnet is 5 USDC. Below this, funds are lost forever.",
-            "USDC uses 6 decimals, not 18. 5 USDC = 5,000,000 in raw units.",
+            "Minimum deposit on Hyperliquid Testnet is 5 USDC2. Below this, funds are lost forever.",
+            "USDC2 uses 6 decimals, not 18. 5 USDC2 = 5,000,000 in raw units.",
             "The Hyperliquid bridge takes approximately 60 seconds to process.",
             "The EIP-712 signatureChainId must be 0x66eee (421614 hex) or usdSend fails silently.",
             "Fresh wallets need ~0.001 ETH for gas to call the bridge contract.",

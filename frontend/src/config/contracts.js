@@ -6,7 +6,8 @@ export const IAPP_ADDRESS =
 export const FALLBACK_API =
   import.meta.env.VITE_FALLBACK_API || "http://localhost:3001";
 
-export const USDC_ADDRESS = "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d";
+// USDC2 on Arb Sepolia (= USDC on mainnet). Accepted by HL bridge.
+export const USDC_ADDRESS = "0x1baAbB04529D43a73232B713C0FE471f7c7334d5";
 
 export const VAULT_ABI = [
   {

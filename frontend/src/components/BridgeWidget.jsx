@@ -863,17 +863,26 @@ export default function BridgeWidget() {
                       </span>
                     </div>
                   )}
-                  {trackData.result.transferTx && (
+                  {trackData.result.bridgeTx && (
                     <div className="bridge-result-row">
-                      <span className="label">Transfer Tx</span>
+                      <span className="label">HL Bridge Tx</span>
                       <span className="value">
                         <a
-                          href={`https://sepolia.arbiscan.io/tx/${trackData.result.transferTx}`}
+                          href={`https://sepolia.arbiscan.io/tx/${trackData.result.bridgeTx}`}
                           target="_blank"
                           rel="noreferrer"
                         >
-                          {trackData.result.transferTx.slice(0, 10)}...
+                          {trackData.result.bridgeTx.slice(0, 10)}...
                         </a>
+                      </span>
+                    </div>
+                  )}
+                  {trackData.result.destination && (
+                    <div className="bridge-result-row">
+                      <span className="label">HL Destination</span>
+                      <span className="value">
+                        {trackData.result.destination.slice(0, 8)}...
+                        {trackData.result.destination.slice(-6)}
                       </span>
                     </div>
                   )}
@@ -1034,23 +1043,23 @@ export default function BridgeWidget() {
                       </span>
                     </div>
                   )}
-                  {trackData.result.transferTx && (
+                  {trackData.result.bridgeTx && (
                     <div className="bridge-result-row">
-                      <span className="label">Transfer Tx</span>
+                      <span className="label">HL Bridge Tx</span>
                       <span className="value">
                         <a
-                          href={`https://sepolia.arbiscan.io/tx/${trackData.result.transferTx}`}
+                          href={`https://sepolia.arbiscan.io/tx/${trackData.result.bridgeTx}`}
                           target="_blank"
                           rel="noreferrer"
                         >
-                          {trackData.result.transferTx.slice(0, 10)}...
+                          {trackData.result.bridgeTx.slice(0, 10)}...
                         </a>
                       </span>
                     </div>
                   )}
                   {trackData.result.destination && (
                     <div className="bridge-result-row">
-                      <span className="label">Destination</span>
+                      <span className="label">HL Destination</span>
                       <span className="value">
                         {trackData.result.destination.slice(0, 8)}...
                         {trackData.result.destination.slice(-6)}

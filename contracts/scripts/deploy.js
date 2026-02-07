@@ -2,7 +2,8 @@ const hre = require("hardhat");
 require("dotenv").config();
 
 async function main() {
-  const USDC_ARB_SEPOLIA = "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d";
+  // USDC2 = HL bridge token on Arb Sepolia (Circle USDC on mainnet)
+  const USDC_ARB_SEPOLIA = "0x1baAbB04529D43a73232B713C0FE471f7c7334d5";
   const TEE_REDISTRIBUTOR = process.env.TEE_WALLET_ADDRESS;
 
   if (!TEE_REDISTRIBUTOR) {
