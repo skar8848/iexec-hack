@@ -239,12 +239,16 @@ export default function BridgeWidget() {
           vaultAddress: VAULT_ADDRESS,
         });
 
-        // Push secret (skip if already exists — requester secrets are immutable)
+        // Use unique secret index per request (iExec secrets are immutable)
+        const secretIndex = Date.now().toString();
         try {
-          await iexec.secrets.pushRequesterSecret("1", secretValue);
+          await iexec.secrets.pushRequesterSecret(secretIndex, secretValue);
         } catch (e) {
           if (!e.message?.includes("already exists")) throw e;
-          console.warn("Secret already exists, reusing existing secret");
+          console.warn("Secret index collision, retrying...");
+          // Extremely unlikely but handle gracefully
+          const retryIndex = (Date.now() + 1).toString();
+          await iexec.secrets.pushRequesterSecret(retryIndex, secretValue);
         }
 
         const { orders: appOrders } =
@@ -265,7 +269,7 @@ export default function BridgeWidget() {
           category: 0,
           volume: 1,
           tag: ["tee", "scone"],
-          params: { iexec_secrets: { 1: "1" } },
+          params: { iexec_secrets: { 1: secretIndex } },
         });
 
         const requestOrder =
